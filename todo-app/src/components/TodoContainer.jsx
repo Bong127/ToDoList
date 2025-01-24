@@ -46,7 +46,10 @@ const TodoContainer = () => {
   const onRemove = async (id) =>{
     let response
     try {
-      response = await todoAPI.remove(id)
+      if(id==null)
+        response = await todoAPI.remove("null")
+      else
+        response = await todoAPI.remove(id)
     } catch (error) {
       console.log(error);
       console.error(`할일삭제 중 에러가 발생하였습니다.`);

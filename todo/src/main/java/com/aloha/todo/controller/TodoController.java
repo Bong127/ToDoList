@@ -99,7 +99,7 @@ public class TodoController {
     public ResponseEntity<?> destroy(@PathVariable(value="id",required=false) String id) {
         try {
             boolean result = false;
-            if(id==null)
+            if(id.equals("null"))
                 result = todoService.deleteAll();
             else
                 result = todoService.deleteById(id);
