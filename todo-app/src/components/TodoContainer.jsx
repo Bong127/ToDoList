@@ -3,6 +3,7 @@ import TodoHeader from './TodoHeader'
 import TodoInput from './TodoInput'
 import TodoList from './TodoList'
 import TodoFooter from './TodoFooter'
+import * as todoAPI from '../apis/todo'
 
 const TodoContainer = () => {
 
@@ -23,51 +24,43 @@ const TodoContainer = () => {
         }
     }
 
-    const option = {
-        method: 'PUT',
-        headers: {
-            'Content-Type' : 'application/json'
-        },
-        body: JSON.stringify(data)
+    let response
+    try {
+      response = await todoAPI.update(JSON.stringify(data))
+    } catch (error) {
+      console.log(error);
+      console.error(`할일수정 중 에러가 발생하였습니다.`);
+      return
     }
+    
+    const status = response.status
 
-    try{
-        const url = 'http://localhost:8080/todos'
-        const response = await fetch(url, option)
-        const msg = await response.text()
-        console.log(msg);
-        
-    }catch(error){
-        console.log(error);
-        
+    if(status == 200){
+      console.log('할일수정 성공!');
+      getList()
+    }else{
+      console.log('할일수정 실패!');
     }
-
-    getList()
   }
 
   const onRemove = async (id) =>{
-    const option = {
-        method: 'DELETE',
-        headers: {
-            'Content-Type' : 'application/json'
-        }
+    let response
+    try {
+      response = await todoAPI.remove(id)
+    } catch (error) {
+      console.log(error);
+      console.error(`할일삭제 중 에러가 발생하였습니다.`);
+      return
     }
-    let url = `http://localhost:8080/todos/${id}`
-    if(id==null)
-        url = 'http://localhost:8080/todos'
-    console.log(url);
     
-    try{
-        const response = await fetch(url, option)
-        const msg = await response.text()
-        console.log(msg);
-        
-    }catch(error){
-        console.log(error);
-        
-    }
+    const status = response.status
 
-    getList()
+    if(status == 200){
+      console.log('할일삭제 성공!');
+      getList()
+    }else{
+      console.log('할일삭제 실패!');
+    }
   }
 
   const onChange = (e) => {
@@ -80,45 +73,43 @@ const TodoContainer = () => {
     let name = input
     if(input == '') setinput('제목없음')
 
-    const data = {
+    const form = {
         name:input,
         seq:1
     }
-    const option = {
-        method: 'POST',
-        headers: {
-            'Content-Type' : 'application/json'
-        },
-        body: JSON.stringify(data)
+    let response
+    try {
+      response = await todoAPI.insert(JSON.stringify(form))
+    } catch (error) {
+      console.log(error);
+      console.error(`할일추가 중 에러가 발생하였습니다.`);
+      return
     }
+    
+    const status = response.status
 
-    try{
-        const url = 'http://localhost:8080/todos'
-        const response = await fetch(url, option)
-        const msg = await response.text()
-        console.log(msg);
-        
-    }catch(error){
-        console.log(error);
-        
+    if(status == 201){
+      console.log('할일추가 성공!');
+      getList()
+      setinput('')
+    }else{
+      console.log('할일추가 실패!');
     }
-
-    getList()
-    setinput('')
   }
 
-  const getList = () =>{
-    fetch('http://localhost:8080/todos')
-        .then(response => response.json())
-        .then(data => {
-            settodoList(data.list);
-        })
-        .catch(error => { console.error(error)});
+  const getList = async () =>{
+    try {
+        const response = await todoAPI.getList();
+        const data = response.data;
+        settodoList(data.list);
+    } catch (error) {
+        console.error('todoList 오류 발생:', error);
+    }
   }
 
   useEffect(() => {
     getList()
-  }, [])
+  }, [todoList])
   
   return (
     <div className="container">

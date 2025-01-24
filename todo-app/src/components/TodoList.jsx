@@ -1,27 +1,26 @@
 import React, { useEffect, useState } from 'react'
 import TodoItem from './TodoItem'
+import * as todoAPI from '../apis/todo'
 
 const TodoList = ({todoList,onToggle,onRemove}) => {
 
   const [page, setpage] = useState(1)
   const [newList, setnewList] = useState([])
 
-  const addList = (page) => {
-    fetch(`http://localhost:8080/todos?page=${page}`)
-      .then(response => response.json())
-      .then(data => {
-        console.log(data);
-
+  const addList = async (page) => {
+    try {
+        const response = await todoAPI.getList(page);
+        const data = response.data;
         if(page > data.pagination.last){
           alert('마지막 페이지입니다.')
           return
         }
-
         const newTodoList = [...newList, ...data.list]
         setnewList(newTodoList)
         setpage(page)
-      })
-      .catch(error => { console.log(error)});
+    } catch (error) {
+        console.error('todoList 오류 발생:', error);
+    }
   }
 
   const handleScroll = () => {
